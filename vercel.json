@@ -11,14 +11,14 @@
       }
     },
     {
-      "src": "api/app.py",
+      "src": "api/health.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/app.py"
+      "src": "/api/health",
+      "dest": "/api/health.py"
     },
     {
       "src": "/(.*)",
