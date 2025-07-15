@@ -11,30 +11,18 @@
       }
     },
     {
-      "src": "api/*.py",
+      "src": "api/app.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/app.py"
     },
     {
       "src": "/(.*)",
-      "dest": "/build/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/build/index.html"
+      "dest": "/index.html"
     }
-  ],
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key"
-  },
-  "functions": {
-    "api/*.py": {
-      "runtime": "python3.9"
-    }
-  }
+  ]
 }
