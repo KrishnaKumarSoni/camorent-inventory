@@ -13,12 +13,20 @@
     {
       "src": "api/health.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "api/process-audio.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/health",
       "dest": "/api/health.py"
+    },
+    {
+      "src": "/api/process-audio",
+      "dest": "/api/process-audio.py"
     },
     {
       "src": "/(.*)",
