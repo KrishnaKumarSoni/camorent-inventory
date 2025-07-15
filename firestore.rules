@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Authentication required for all operations
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is the owner of the document
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.created_by;
+    }
+    
+    // SKUs collection - read access for authenticated users, write access for owners
+    match /skus/{skuId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.created_by;
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Inventory collection - read access for authenticated users, write access for owners
+    match /inventory/{inventoryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                   request.auth.uid == request.resource.data.created_by;
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+    
+    // Users collection (for user profiles if needed)
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

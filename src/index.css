@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #FFFFFF;
+    color: #000000;
+  }
+
+  /* Hide scrollbars while keeping scroll functionality */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  /* Custom button styles */
+  .btn-primary {
+    @apply bg-primary text-background hover:bg-accent transition-colors duration-200 px-6 py-3 rounded-button font-medium;
+  }
+  
+  .btn-secondary {
+    @apply bg-accent text-background hover:bg-purple-600 transition-colors duration-200 px-6 py-3 rounded-button font-medium;
+  }
+  
+  /* Custom input styles */
+  .input-primary {
+    @apply border border-primary rounded-input px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors duration-200;
+  }
+  
+  /* Mobile container */
+  .mobile-container {
+    @apply max-w-mobile mx-auto min-h-screen bg-background;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  .animation-delay-75 {
+    animation-delay: 75ms;
+  }
+  
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+  
+  /* Recording pulse animation */
+  @keyframes recording-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+  
+  .animate-recording-pulse {
+    animation: recording-pulse 1s ease-in-out infinite;
+  }
+}

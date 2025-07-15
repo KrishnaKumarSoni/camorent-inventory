@@ -1,0 +1,21 @@
+.App {
+  @apply mobile-container text-center;
+}
+
+.App-header {
+  @apply p-8;
+}
+
+.App-header h1 {
+  @apply font-heading font-bold text-primary mb-4 text-2xl;
+}
+
+.App-header p {
+  @apply font-sans font-regular text-gray-medium;
+}
+
+.mobile-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
