@@ -71,75 +71,64 @@ const ProcessingModal: React.FC<ProcessingModalProps> = ({
       setProcessingComplete(false);
       setProcessingError(null);
       setCurrentStepIndex(0);
-
-      // Step 1: Transcription
-      updateStepStatus('transcription', 'processing');
-      setCurrentStepIndex(0);
       
       if (!audioBlob) {
         throw new Error('No audio data available');
       }
 
-      // Step 1: Start transcription
+      // Call the API once and let it handle all the processing
       updateStepStatus('transcription', 'processing');
       setCurrentStepIndex(0);
-      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Step 2: Start extraction
-      updateStepStatus('transcription', 'completed');
-      updateStepStatus('extraction', 'processing');
-      setCurrentStepIndex(1);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // For sample data, call API directly without FormData
+      const response = await fetch('/api/process-audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sample: true }),
+      });
       
-      // Step 3: Start research
-      updateStepStatus('extraction', 'completed');
-      updateStepStatus('research', 'processing');
-      setCurrentStepIndex(2);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Step 4: Call the actual API for processing
-      updateStepStatus('research', 'completed');
-      updateStepStatus('preparation', 'processing');
-      setCurrentStepIndex(3);
-      
-      const result = await api.processAudio(audioBlob);
+      const result = await response.json();
       
       if (!result.success) {
         throw new Error(result.error || 'Processing failed');
       }
-      
+
+      // Mark all steps as completed immediately
+      updateStepStatus('transcription', 'completed');
+      updateStepStatus('extraction', 'completed');
+      updateStepStatus('research', 'completed');
       updateStepStatus('preparation', 'completed');
-      
+      setCurrentStepIndex(3);
       setProcessingComplete(true);
       
       // Transform API response to form data structure
-      const apiData = result.data || {};
-      const extractedEquipment = apiData.extracted_equipment || {};
-      const confidenceScores = apiData.confidence_scores || {};
+      const extractedEquipment = result.extracted_equipment || {};
+      const confidenceScores = result.confidence_scores || {};
       
-      // Wait a moment before completing
-      setTimeout(() => {
-        onComplete({
-          formData: {
-            name: extractedEquipment.equipment_type || extractedEquipment.name || "Equipment Item",
-            brand: extractedEquipment.brand || "",
-            model: extractedEquipment.model || "", 
-            category: extractedEquipment.category || "cameras",
-            description: extractedEquipment.description || "Equipment recorded via voice",
-            serial_number: extractedEquipment.serial_number || "",
-            condition: extractedEquipment.condition || "good",
-            purchase_price: extractedEquipment.purchase_price || 0,
-            current_value: extractedEquipment.current_value || extractedEquipment.estimated_value || 0,
-            price_per_day: extractedEquipment.price_per_day || extractedEquipment.rental_rate || 0,
-            location: extractedEquipment.location || "",
-            notes: extractedEquipment.notes || "Recorded via voice",
-            specifications: extractedEquipment.specifications || {},
-            barcode: extractedEquipment.barcode || "",
-            security_deposit: extractedEquipment.security_deposit || 0
-          },
-          confidenceScores: confidenceScores
-        });
-      }, 1000);
+      // Complete immediately - no more fake delays
+      onComplete({
+        formData: {
+          name: extractedEquipment.equipment_type || extractedEquipment.name || "Equipment Item",
+          brand: extractedEquipment.brand || "",
+          model: extractedEquipment.model || "", 
+          category: extractedEquipment.category || "cameras",
+          description: extractedEquipment.description || "Equipment recorded via voice",
+          serial_number: extractedEquipment.serial_number || "",
+          condition: extractedEquipment.condition || "good",
+          purchase_price: extractedEquipment.purchase_price || 0,
+          current_value: extractedEquipment.current_value || extractedEquipment.estimated_value || 0,
+          price_per_day: extractedEquipment.price_per_day || extractedEquipment.rental_rate || 0,
+          location: extractedEquipment.location || "",
+          notes: extractedEquipment.notes || "Recorded via voice",
+          specifications: extractedEquipment.specifications || {},
+          barcode: extractedEquipment.barcode || "",
+          security_deposit: extractedEquipment.security_deposit || 0,
+          image_url: extractedEquipment.image_url || ""
+        },
+        confidenceScores: confidenceScores
+      });
 
     } catch (error) {
       console.error('Processing error:', error);

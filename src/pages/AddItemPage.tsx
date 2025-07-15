@@ -22,6 +22,7 @@ const AddItemPage: React.FC = () => {
   };
 
   const handleProcessingComplete = (result: any) => {
+    console.log('Processing complete, result:', result);
     setExtractedData(result.formData || result);
     setConfidenceScores(result.confidenceScores);
     setPageState('form');
@@ -77,6 +78,7 @@ const AddItemPage: React.FC = () => {
   };
 
   if (pageState === 'form') {
+    console.log('Rendering form with data:', extractedData, 'confidence:', confidenceScores);
     return (
       <div className="p-6">
         <div className="text-center mb-8">

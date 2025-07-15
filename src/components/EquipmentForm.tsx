@@ -1,5 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { Check, CaretDown, X } from 'phosphor-react';
+import { Check, CaretDown, X, Package, Tag, Barcode, MapPin, CurrencyDollar, 
+         Calendar, Wrench, Image, TextAa, Hash, Gear, Camera, ArrowsClockwise } from 'phosphor-react';
+
+// Simple barcode display component
+const BarcodeDisplay: React.FC<{ value: string }> = ({ value }) => {
+  if (!value) return null;
+  
+  return (
+    <div className="flex flex-col items-center p-3 bg-gray-50 rounded border">
+      <div className="flex flex-col items-center mb-2">
+        <div className="flex gap-0.5 mb-1">
+          {/* Simple barcode visualization */}
+          {value.split('').map((_, i) => (
+            <div 
+              key={i} 
+              className="bg-black" 
+              style={{ 
+                width: Math.random() > 0.5 ? '2px' : '1px', 
+                height: '30px' 
+              }} 
+            />
+          ))}
+        </div>
+        <span className="text-xs font-mono text-gray-600">{value}</span>
+      </div>
+    </div>
+  );
+};
+
+// Equipment image display component
+const EquipmentImage: React.FC<{ 
+  imageUrl?: string, 
+  equipmentName: string 
+}> = ({ imageUrl, equipmentName }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!imageUrl || imageError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+        <Camera size={32} className="text-gray-400 mb-2" />
+        <span className="text-sm text-gray-500 text-center">
+          {imageUrl ? 'Failed to load image' : 'No image available'}
+        </span>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="relative">
+      <img 
+        src={imageUrl} 
+        alt={equipmentName}
+        className="w-full h-48 object-cover rounded-lg border"
+        onError={() => setImageError(true)}
+      />
+      <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
+        {equipmentName}
+      </div>
+    </div>
+  );
+};
 
 interface EquipmentData {
   // SKU fields (from PRD)
@@ -11,6 +71,7 @@ interface EquipmentData {
   specifications: Record<string, string>;
   price_per_day: number;
   security_deposit: number;
+  image_url?: string;
   
   // Inventory fields (from PRD)  
   serial_number: string;
@@ -42,13 +103,6 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
   onCancel,
   loading = false
 }) => {
-  // Generate barcode automatically
-  const generateBarcode = () => {
-    const timestamp = Date.now().toString();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `CAM${timestamp.slice(-6)}${random}`;
-  };
-
   const [formData, setFormData] = useState<EquipmentData>({
     name: '',
     brand: '',
@@ -58,8 +112,9 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
     specifications: {},
     price_per_day: 0,
     security_deposit: 0,
+    image_url: '',
     serial_number: '',
-    barcode: generateBarcode(),
+    barcode: '',
     condition: 'good',
     status: 'available',
     location: '',
@@ -68,6 +123,28 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
     notes: '',
     ...initialData
   });
+
+  // Generate barcode automatically
+  const generateBarcode = (): string => {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const categoryCode = formData.category ? formData.category.substring(0, 3).toUpperCase() : 'EQP';
+    return `${categoryCode}${timestamp.slice(-6)}${random}`;
+  };
+
+  // Generate a new barcode
+  const handleGenerateNewBarcode = () => {
+    const newBarcode = generateBarcode();
+    updateField('barcode', newBarcode);
+  };
+
+  // Generate initial barcode after component mounts
+  useEffect(() => {
+    if (!formData.barcode) {
+      const initialBarcode = generateBarcode();
+      updateField('barcode', initialBarcode);
+    }
+  }, []);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -196,6 +273,30 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
     );
   };
 
+  // Icon mapping for form fields
+  const getFieldIcon = (field: keyof EquipmentData) => {
+    const iconMap = {
+      name: Package,
+      brand: Tag,
+      model: Gear,
+      category: Package,
+      description: TextAa,
+      serial_number: Hash,
+      barcode: Barcode,
+      condition: Wrench,
+      location: MapPin,
+      purchase_price: CurrencyDollar,
+      current_value: CurrencyDollar,
+      price_per_day: CurrencyDollar,
+      security_deposit: CurrencyDollar,
+      notes: TextAa,
+      specifications: Gear,
+      status: Wrench,
+      image_url: Image
+    };
+    return iconMap[field] || Package;
+  };
+
   const FormField: React.FC<{
     label: string;
     field: keyof EquipmentData;
@@ -205,11 +306,13 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
   }> = ({ label, field, type = 'text', required = false, children }) => {
     const error = errors[field as string];
     const fieldName = field as string;
+    const FieldIcon = getFieldIcon(field);
     
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="block text-primary font-medium">
+          <label className="flex items-center gap-2 text-primary font-medium">
+            <FieldIcon size={16} className="text-gray-medium" />
             {label} {required && <span className="text-red-500">*</span>}
           </label>
           {getConfidenceIndicator(fieldName)}
@@ -267,10 +370,49 @@ const EquipmentForm: React.FC<EquipmentFormProps> = ({
           
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Serial Number" field="serial_number" />
-            <FormField label="Barcode" field="barcode" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-primary font-medium">
+                  <Barcode size={16} className="text-gray-medium" />
+                  Barcode {getConfidenceIndicator('barcode')}
+                </label>
+              </div>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    value={formData.barcode}
+                    onChange={(e) => updateField('barcode', e.target.value)}
+                    className="input-primary flex-1"
+                    placeholder="Equipment barcode"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerateNewBarcode}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Generate new barcode"
+                  >
+                    <ArrowsClockwise size={16} />
+                  </button>
+                </div>
+                {formData.barcode && <BarcodeDisplay value={formData.barcode} />}
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Equipment Image Section */}
+      {formData.image_url && (
+        <section className="space-y-4">
+          <h3 className="font-heading font-semibold text-primary text-lg border-b border-gray-light pb-2">
+            Equipment Image
+          </h3>
+          <EquipmentImage 
+            imageUrl={formData.image_url} 
+            equipmentName={formData.name || 'Equipment'} 
+          />
+        </section>
+      )}
 
       {/* Condition Section */}
       <section className="space-y-4">
