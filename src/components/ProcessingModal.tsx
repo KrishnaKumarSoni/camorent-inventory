@@ -80,18 +80,31 @@ const ProcessingModal: React.FC<ProcessingModalProps> = ({
       updateStepStatus('transcription', 'processing');
       setCurrentStepIndex(0);
       
-      // For sample data, call API directly without FormData
-      const response = await fetch('/api/process-audio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sample: true }),
-      });
+      // Check if this is a test/dummy blob
+      const isDummyBlob = audioBlob.size <= 20; // Dummy blob is very small
+      
+      let response;
+      if (isDummyBlob) {
+        // Use sample data for testing
+        response = await fetch('/api/process-audio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sample: true }),
+        });
+      } else {
+        // Send the actual audio blob to the API
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.webm');
+        
+        response = await fetch('/api/process-audio', {
+          method: 'POST',
+          body: formData,
+        });
+      }
       
       const result = await response.json();
       
-      if (!result.success) {
+      if (result.processing_status === 'error') {
         throw new Error(result.error || 'Processing failed');
       }
 
@@ -104,27 +117,28 @@ const ProcessingModal: React.FC<ProcessingModalProps> = ({
       setProcessingComplete(true);
       
       // Transform API response to form data structure
-      const extractedEquipment = result.extracted_equipment || {};
+      // The API returns data directly in the result object
+      const extractedEquipment = result;
       const confidenceScores = result.confidence_scores || {};
       
       // Complete immediately - no more fake delays
       onComplete({
         formData: {
-          name: extractedEquipment.equipment_type || extractedEquipment.name || "Equipment Item",
+          name: extractedEquipment.name || "Equipment Item",
           brand: extractedEquipment.brand || "",
           model: extractedEquipment.model || "", 
           category: extractedEquipment.category || "cameras",
           description: extractedEquipment.description || "Equipment recorded via voice",
-          serial_number: extractedEquipment.serial_number || "",
+          serial_number: extractedEquipment.serialNumber || "",
           condition: extractedEquipment.condition || "good",
-          purchase_price: extractedEquipment.purchase_price || 0,
-          current_value: extractedEquipment.current_value || extractedEquipment.estimated_value || 0,
-          price_per_day: extractedEquipment.price_per_day || extractedEquipment.rental_rate || 0,
+          purchase_price: extractedEquipment.purchasePrice || 0,
+          current_value: extractedEquipment.currentValue || 0,
+          price_per_day: extractedEquipment.pricePerDay || 0,
           location: extractedEquipment.location || "",
           notes: extractedEquipment.notes || "Recorded via voice",
           specifications: extractedEquipment.specifications || {},
           barcode: extractedEquipment.barcode || "",
-          security_deposit: extractedEquipment.security_deposit || 0,
+          security_deposit: extractedEquipment.securityDeposit || 0,
           image_url: extractedEquipment.image_url || ""
         },
         confidenceScores: confidenceScores

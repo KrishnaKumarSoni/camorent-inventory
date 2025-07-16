@@ -110,11 +110,35 @@ export const api = {
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
 
-    return apiCall<any>(`${BASE_URL}/api/process-audio`, {
-      method: 'POST',
-      headers: {}, // Don't set Content-Type for FormData
-      body: formData,
-    });
+    try {
+      const response = await fetch(`${BASE_URL}/api/process-audio`, {
+        method: 'POST',
+        body: formData, // Don't set Content-Type for FormData - let browser handle it
+      });
+
+      if (!response.ok) {
+        throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, response.status);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new ApiError(data.error);
+      }
+
+      return { data, success: true };
+    } catch (error) {
+      console.error('Audio processing failed:', error);
+      
+      if (error instanceof ApiError) {
+        return { error: error.message, success: false };
+      }
+      
+      return { 
+        error: 'Audio processing failed. Please try again.', 
+        success: false 
+      };
+    }
   },
 
   // Health check

@@ -43,22 +43,17 @@ const AddItemPage: React.FC = () => {
         throw new Error('User not authenticated');
       }
 
-      // Simulate saving delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Store in localStorage for demo (in real app this would be API call)
-      const existingItems = JSON.parse(localStorage.getItem('inventory') || '[]');
-      const newItem = {
-        id: Date.now().toString(),
+      // Save to Firebase via API endpoint
+      const response = await api.createInventoryItem({
         ...formData,
-        created_by: user.uid,
-        created_at: new Date().toISOString()
-      };
-      
-      existingItems.push(newItem);
-      localStorage.setItem('inventory', JSON.stringify(existingItems));
+        created_by: user.uid
+      });
 
-      console.log('Equipment saved successfully:', newItem);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to save equipment');
+      }
+
+      console.log('Equipment saved successfully:', response.data);
       
       // Navigate to inventory page after successful save
       navigate('/inventory');

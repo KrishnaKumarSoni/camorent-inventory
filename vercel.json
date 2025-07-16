@@ -17,6 +17,22 @@
     {
       "src": "api/process-audio.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "api/test-openai.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/inventory.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/skus.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/categories.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
@@ -27,6 +43,22 @@
     {
       "src": "/api/process-audio",
       "dest": "/api/process-audio.py"
+    },
+    {
+      "src": "/api/test-openai",
+      "dest": "/api/test-openai.py"
+    },
+    {
+      "src": "/api/inventory",
+      "dest": "/api/inventory.py"
+    },
+    {
+      "src": "/api/skus",
+      "dest": "/api/skus.py"
+    },
+    {
+      "src": "/api/categories",
+      "dest": "/api/categories.py"
     },
     {
       "src": "/static/(.*)",

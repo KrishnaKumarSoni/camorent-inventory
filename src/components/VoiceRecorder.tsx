@@ -345,6 +345,30 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, onCa
         />
       )}
 
+      {/* Test Button */}
+      {recordingState === 'idle' && (
+        <button
+          onClick={() => {
+            // Create a dummy blob for testing
+            const dummyBlob = new Blob(['dummy audio'], { type: 'audio/webm' });
+            onRecordingComplete(dummyBlob);
+          }}
+          style={{
+            backgroundColor: '#6366F1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '12px 24px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            marginBottom: '20px'
+          }}
+        >
+          Test using sample data
+        </button>
+      )}
+
       {/* Instructions */}
       {recordingState === 'idle' && (
         <div className="text-center max-w-sm">

@@ -32,9 +32,34 @@ const InventoryPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Get items from localStorage instead of API
-      const storedItems = JSON.parse(localStorage.getItem('inventory') || '[]');
-      setInventoryItems(storedItems);
+      setError(null);
+      
+      // Get inventory items from Firebase via API
+      const response = await api.getInventory();
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to load inventory');
+      }
+      
+      // Transform Firebase data to match component interface
+      const items = response.data?.items || [];
+      const transformedItems = items.map((item: any) => ({
+        id: item.id,
+        sku_id: item.sku_id,
+        serial_number: item.serial_number || '',
+        condition: item.condition || 'good',
+        status: item.status || 'available',
+        location: item.location || '',
+        notes: item.notes || '',
+        created_at: item.created_at,
+        // Include SKU data if available
+        name: item.sku?.name || item.name,
+        brand: item.sku?.brand || item.brand,
+        model: item.sku?.model || item.model,
+        category: item.sku?.category || item.category
+      }));
+      
+      setInventoryItems(transformedItems);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching inventory:', error);
