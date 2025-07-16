@@ -141,6 +141,42 @@ export const api = {
     }
   },
 
+  // Text processing API call
+  async processText(text: string) {
+    try {
+      const response = await fetch(`${BASE_URL}/api/process-text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, response.status);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new ApiError(data.error);
+      }
+
+      return { data, success: true };
+    } catch (error) {
+      console.error('Text processing failed:', error);
+      
+      if (error instanceof ApiError) {
+        return { error: error.message, success: false };
+      }
+      
+      return { 
+        error: 'Text processing failed. Please try again.', 
+        success: false 
+      };
+    }
+  },
+
   // Health check
   async healthCheck() {
     return apiCall<{ status: string; message: string }>('/api/health');

@@ -33,6 +33,10 @@
     {
       "src": "api/categories.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "api/process-text.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
@@ -59,6 +63,10 @@
     {
       "src": "/api/categories",
       "dest": "/api/categories.py"
+    },
+    {
+      "src": "/api/process-text",
+      "dest": "/api/process-text.py"
     },
     {
       "src": "/static/(.*)",

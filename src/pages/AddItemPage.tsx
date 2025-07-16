@@ -120,27 +120,60 @@ const AddItemPage: React.FC = () => {
           
           {/* Sample Text Button */}
           <button
-            onClick={() => {
-              const sampleText = "This is a Canon camera, the R5 model I think. Got it from some dealer last year. Condition looks good, working fine but has some scratches on the body. Don't know the exact serial number... will check later. We keep it somewhere in the back warehouse. Pretty expensive camera, should rent for good money.";
-              console.log('Using sample text:', sampleText);
+            onClick={async () => {
+              const sampleText = "I have a Sony FX6 professional cinema camera here, serial number SNY789456123. It's a full-frame camera in excellent condition, bought for 450000 rupees last month. Current market value is around 420000 rupees. We can rent it for 3500 rupees per day with a security deposit of 50000 rupees. It's stored in our main equipment room, section B, shelf 2. The camera shoots amazing 4K footage and has dual base ISO. No issues with it so far.";
+              console.log('Processing sample text with real workflow:', sampleText);
               
-              // Create a mock audio blob with the sample text
-              const blob = new Blob([sampleText], { type: 'audio/webm' });
-              setAudioBlob(blob);
-              setPageState('processing');
+              try {
+                setPageState('processing');
+                
+                // Use real text processing API instead of mock
+                const response = await api.processText(sampleText);
+                
+                if (!response.success) {
+                  throw new Error(response.error || 'Text processing failed');
+                }
+                
+                // Handle the result the same way as voice processing
+                handleProcessingComplete({
+                  formData: {
+                    name: response.data.name || "Equipment Item",
+                    brand: response.data.brand || "",
+                    model: response.data.model || "", 
+                    category: response.data.category || "cameras",
+                    description: response.data.description || "Equipment recorded via text",
+                    serial_number: response.data.serialNumber || "",
+                    condition: response.data.condition || "good",
+                    purchase_price: response.data.purchasePrice || 0,
+                    current_value: response.data.currentValue || 0,
+                    price_per_day: response.data.pricePerDay || 0,
+                    location: response.data.location || "",
+                    notes: response.data.notes || "Processed via text input",
+                    specifications: response.data.specifications || {},
+                    barcode: response.data.barcode || "",
+                    security_deposit: response.data.securityDeposit || 0,
+                    image_url: response.data.image_url || ""
+                  },
+                  confidenceScores: response.data.confidence_scores || {}
+                });
+              } catch (error) {
+                console.error('Sample text processing failed:', error);
+                alert('Sample text processing failed. Please try again.');
+                setPageState('recording');
+              }
             }}
             style={{
-              backgroundColor: '#f3f4f6',
-              border: '1px solid #d1d5db',
+              backgroundColor: '#e0f2fe',
+              border: '1px solid #0288d1',
               borderRadius: '8px',
               padding: '8px 16px',
               fontSize: '14px',
-              color: '#374151',
+              color: '#01579b',
               cursor: 'pointer',
               marginBottom: '20px'
             }}
           >
-            🧪 Use Sample Data (for testing)
+            🧪 Process Sample Text (Real AI)
           </button>
 
           {/* Speaking Prompts */}
@@ -150,15 +183,14 @@ const AddItemPage: React.FC = () => {
             </p>
             <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center'}}>
               {[
-                'Equipment name & brand',
-                'Model number', 
-                'Serial number',
-                'Condition',
-                'Purchase price',
-                'Current value',
-                'Daily rate',
-                'Storage location',
-                'Any issues or notes'
+                'Canon EOS R5 camera',
+                'Model R5, serial CAN123456', 
+                'Good condition, minor scratches',
+                'Bought for ₹2.5 lakhs',
+                'Current value ₹2.2 lakhs',
+                'Rent ₹2000/day',
+                'Stored in section A-3',
+                'Works perfectly, includes battery'
               ].map((prompt, index) => (
                 <span key={index} style={{
                   backgroundColor: '#fef3c7',
